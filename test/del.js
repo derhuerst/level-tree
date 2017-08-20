@@ -10,7 +10,7 @@ test('del deletes from db correctly', (t) => {
 	const expected = [
 		{key: 'tree.a1', value: 'A1'},
 		{key: 'tree.a2', value: 'not to be deleted'},
-		{key: 'tree.a2-b1', value: 'not to be deleted'},
+		{key: 'tree.a2-1', value: 'not to be deleted'},
 		{key: 'tree.a3', value: 'A3'}
 	]
 	t.plan(2 + expected.length)
@@ -22,10 +22,10 @@ test('del deletes from db correctly', (t) => {
 
 	db.batch()
 		.put('tree.a1', 'A1')
-		.put('tree.a2.b1', 'A2-B1')
+		.put('tree.a2.0', 'A2-1')
 		.put('tree.a2', 'not to be deleted')
-		.put('tree.a2-b1', 'not to be deleted')
-		.put('tree.a2.b2.c1', 'A2-B2-C1')
+		.put('tree.a2-1', 'not to be deleted')
+		.put('tree.a2.1.b1', 'A2-2-B1')
 		.put('tree.a3', 'A3')
 	.write((err) => {
 		if (err) return t.ifError(err)
@@ -51,10 +51,10 @@ test('del dry run works', (t) => {
 
 	db.batch()
 		.put('tree.a1', 'A1')
-		.put('tree.a2.b1', 'A2-B1')
+		.put('tree.a2.0', 'A2-1')
 		.put('tree.a2', 'not to be deleted')
-		.put('tree.a2-b1', 'not to be deleted')
-		.put('tree.a2.b2.c1', 'A2-B2-C1')
+		.put('tree.a2-1', 'not to be deleted')
+		.put('tree.a2.1.b1', 'A2-2-B1')
 		.put('tree.a3', 'A3')
 	.write((err) => {
 		if (err) return t.ifError(err)
@@ -63,8 +63,8 @@ test('del dry run works', (t) => {
 			if (err) return t.ifError(err)
 
 			t.deepEqual(ops, [
-				{type: 'del', key: 'tree.a2.b1'},
-				{type: 'del', key: 'tree.a2.b2.c1'}
+				{type: 'del', key: 'tree.a2.0'},
+				{type: 'del', key: 'tree.a2.1.b1'}
 			])
 		})
 	})

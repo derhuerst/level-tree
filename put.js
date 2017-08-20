@@ -12,9 +12,13 @@ const createPut = (db) => {
 		const stack = [[ns + '.', tree]] // add root
 		while (stack.length > 0) {
 			const [prefix, subtree] = stack.pop()
+
+			const isArray = Array.isArray(subtree)
 			for (let k of Object.keys(subtree)) {
+				if (isArray) k = parseInt(k)
 				const val = subtree[k]
-				if (val && 'object' === typeof val && !Array.isArray(val)) { // object
+
+				if (val && 'object' === typeof val) { // object
 					stack.push([prefix + k + '.', val])
 				} else {
 					ops.push({type: 'put', key: prefix + k, value: val})

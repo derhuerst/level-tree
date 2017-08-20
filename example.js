@@ -17,18 +17,16 @@ const tree = levelTree(db)
 
 tree.put('example', {
 	a1: 'A1',
-	a2: {
-		b1: 'A2-B1',
-		b2: {
-			c1: 'A2-B2-C1'
-		}
-	},
+	a2: [
+		'A2-1',
+		{b1: 'A2-2-B1'}
+	],
 	a3: 'A3'
 }, (err) => {
 	if (err) return onErr(err)
 
 	db.batch()
-		.put('example.a2.b1', 'a new value')
+		.put('example.a2.1.b1', 'a new value')
 		.put('noise', 'does not belong to the tree')
 	.write((err) => {
 		if (err) return onErr(err)
