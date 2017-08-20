@@ -57,6 +57,40 @@ test('patch: add works', (t) => {
 	})
 })
 
+test('patch: remove works', (t) => {
+	const expected = sortBy([
+		{key: 't.a1', value: 'A1'},
+		{key: 't.a3', value: 'A3'}
+	], 'key')
+	t.plan(expected.length)
+
+	const db = levelup(memdown)
+	const patch = createPatch(db)
+
+	db.batch()
+		.put('t.a1', 'A1')
+		.put('t.a2.0', 'A2-0')
+		.put('t.a2.1.b1', 'A2-1-B1')
+		.put('t.a3', 'A3')
+	.write((err) => {
+		if (err) return t.ifError(err)
+
+		patch('t', [
+			{op: 'remove', path: '/a2'}
+		], (err) => {
+			if (err) return t.ifError(err)
+
+			let dataI = 0
+			db.createReadStream()
+			.once('error', t.ifError)
+			.on('data', (data) => {
+				const i = dataI++
+				t.deepEqual(data, expected[i], i + ' looks good')
+			})
+		})
+	})
+})
+
 test('patch checks for conflicts', (t) => {
 	t.plan(2 * 2)
 

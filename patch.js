@@ -3,12 +3,14 @@
 const eachSeries = require('async/eachSeries')
 
 const createTypeIndex = require('./lib/type-index')
+const createDel = require('./del')
 const {arrayIndex, ARRAY, OBJECT, OTHER} = createTypeIndex
 
 // applies a JSON patch to a level-tree
 // see http://jsonpatch.com
 const createPatch = (db) => {
-	const ops = []
+	const del = createDel(db)
+	let ops = []
 
 	const applyAll = (ns, patches, cb) => {
 		createTypeIndex(db, ns, (err, typeAt) => {
@@ -30,6 +32,15 @@ const createPatch = (db) => {
 
 					ops.push({type: 'put', key: path.join('.'), value: patch.value})
 					cb()
+				} else if (patch.op === 'remove') {
+					// todo: optimize using the typeAt index
+					const key = path.join('.')
+					del(key, true, (err, delOps) => {
+						if (err) return cb(err)
+
+						ops = ops.concat(delOps)
+						cb()
+					})
 				} else {
 					// todo: replace, remove, copy, move, test
 					return cb(new Error('unsupported patch op:' + patch.op))
