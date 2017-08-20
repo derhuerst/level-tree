@@ -6,7 +6,6 @@ const test = require('tape')
 const sortBy = require('lodash.sortby')
 
 const createPatch = require('../patch')
-const {typeAt, ARRAY, OBJECT, OTHER} = createPatch
 
 test('patch', (t) => {
 	t.plan(2)
@@ -77,19 +76,4 @@ test('patch checks for conflicts', (t) => {
 			t.equal(err.message, 'conflict at /a1/b1')
 		})
 	})
-})
-
-test.skip('patch: typeAt helper', (t) => {
-	const entries = [
-		{key: 'tree.a2.1.b1',	value: 'A2-2-B1'},
-		{key: 'tree.a2.0',		value: 'A2-1'},
-		{key: 'tree.a1',		value: 'A1'}
-	]
-
-	t.equal(typeAt(entries, ['tree']), OBJECT)
-	t.equal(typeAt(entries, ['tree', 'a1']), OTHER)
-	t.equal(typeAt(entries, ['tree', 'a2']), ARRAY)
-	t.equal(typeAt(entries, ['tree', 'a2', '1']), OBJECT)
-	t.equal(typeAt(entries, ['tree', 'a2', '1', 'b1']), OTHER)
-	t.end()
 })

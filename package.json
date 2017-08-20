@@ -8,7 +8,8 @@
 		"get.js",
 		"put.js",
 		"del.js",
-		"patch.js"
+		"patch.js",
+		"lib"
 	],
 	"keywords": [
 		"leveldb",
