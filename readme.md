@@ -2,7 +2,7 @@
 
 **Store trees in a [LevelDB](https://github.com/level/levelup).**
 
-[![npm version](https://img.shields.io/npm/v/level-tree.svg)](https://www.npmjs.com/package/level-tree)
+[![npm version](https://img.shields.io/npm/v/@derhuerst/level-tree.svg)](https://www.npmjs.com/package/@derhuerst/level-tree)
 [![build status](https://img.shields.io/travis/derhuerst/level-tree.svg)](https://travis-ci.org/derhuerst/level-tree)
 ![ISC-licensed](https://img.shields.io/github/license/derhuerst/level-tree.svg)
 [![chat on gitter](https://badges.gitter.im/derhuerst.svg)](https://gitter.im/derhuerst)
@@ -55,6 +55,27 @@ const createPut = require('@derhuerst/level-tree/put')
 const get = createGet(db)
 const put = createPut(db)
 ```
+
+
+## API
+
+```js
+const tree = createTree(db)
+```
+
+`db` must be a [levelup](https://www.npmjs.com/package/levelup)-compatible database.
+
+## `tree.get(namespace, cb)`
+
+Will try to infer the tree from all keys starting with `namespace`.
+
+## `tree.put(namespace, data, cb)`
+
+## `tree.del(namespace, [dryRun], cb)`
+
+If `dryRun` is `true`, `cb` will be called with all [ops](https://www.npmjs.com/package/levelup#batch) to be executed. Otherwise, they will be executed.
+
+If it fails to find any chilren under `namespace`, it will try to delete at `namespace` itself (the root so to say) as well.
 
 
 ## Contributing

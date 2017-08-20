@@ -6,7 +6,8 @@
 	"files": [
 		"index.js",
 		"get.js",
-		"put.js"
+		"put.js",
+		"del.js"
 	],
 	"keywords": [
 		"leveldb",
