@@ -11,14 +11,49 @@
 ## Installing
 
 ```shell
-npm install level-tree
+npm install @derhuerst/level-tree
 ```
 
 
 ## Usage
 
 ```js
-todo
+const levelTree = require('@derhuerst/level-tree')
+
+const db = levelup(memdown)
+const tree = levelTree(db)
+
+tree.put('example', {
+	a1: 'A1',
+	a2: {
+		b1: 'A2-B1',
+		b2: {
+			c1: 'A2-B2-C1'
+		}
+	}
+}, (err) => {
+	if (err) return console.error(err)
+
+	db.put('example.a2.b1', 'a new value', (err) => {
+		if (err) return console.error(err)
+
+		tree.get('example', (err, example) => {
+			if (err) return console.error(err)
+
+			console.log(example)
+		})
+	})
+})
+```
+
+You can also load `get` and `put` separately:
+
+```js
+const createGet = require('@derhuerst/level-tree/get')
+const createPut = require('@derhuerst/level-tree/put')
+
+const get = createGet(db)
+const put = createPut(db)
 ```
 
 

@@ -1,6 +1,6 @@
 {
-	"name": "level-tree",
-	"description": "todo-description",
+	"name": "@derhuerst/level-tree",
+	"description": "Store trees in a LevelDB.",
 	"version": "0.1.0",
 	"main": "index.js",
 	"files": [

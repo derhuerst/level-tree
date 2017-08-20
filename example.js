@@ -33,10 +33,10 @@ tree.put('example', {
 	.write((err) => {
 		if (err) return onErr(err)
 
-		tree.get('example', (err, t) => {
+		tree.get('example', (err, example) => {
 			if (err) return onErr(err)
 
-			console.log(t)
+			console.log(example)
 		})
 	})
 })
