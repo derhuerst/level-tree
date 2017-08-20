@@ -15,10 +15,11 @@ test('get reads from db correctly', (t) => {
 	t.equal(get.length, 2)
 
 	db.batch()
-		.put('tree.a1', 'val A1')
-		.put('tree.a2.b1', 'val A2-B1')
-		.put('tree.a2.b2.c1', 'val A2-B2-C1')
-		.put('tree.a3', 'val A3')
+		.put('tree.a1', 'A1')
+		.put('tree.a2.0', 'A2-1')
+		.put('tree.a2.1.b1', 'A2-2-B1')
+		.put('tree.a2.2.b1', 'A2-3-B1')
+		.put('tree.a3', 'A3')
 	.write((err) => {
 		if (err) return t.ifError(err)
 
@@ -26,14 +27,13 @@ test('get reads from db correctly', (t) => {
 			if (err) return t.ifError(err)
 
 			t.deepEqual(tree, {
-				a1: 'val A1',
-				a2: {
-					b1: 'val A2-B1',
-					b2: {
-						c1: 'val A2-B2-C1'
-					}
-				},
-				a3: 'val A3'
+				a1: 'A1',
+				a2: [
+					'A2-1',
+					{b1: 'A2-2-B1'},
+					{b1: 'A2-3-B1'}
+				],
+				a3: 'A3'
 			})
 		})
 	})
@@ -48,7 +48,7 @@ test('get ignores noise', (t) => {
 		.put('tree.a1', 'val A1')
 		.put('noise', 'to be ignored')
 		.put('tree.a2.b1', 'val A2-B1')
-		.put('tree-noise', 'to be ignored')
+		.put('tree-1', 'to be ignored')
 	.write((err) => {
 		if (err) return t.ifError(err)
 
@@ -79,7 +79,7 @@ test('get throws on conflicts', (t) => {
 
 		get('tree', (err, tree) => {
 			t.ok(err)
-			t.equal(err.message, 'a2 is blocked')
+			t.equal(err.message, 'tree.a2 is blocked by a primitive value')
 			t.notOk(tree)
 		})
 	})

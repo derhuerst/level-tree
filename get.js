@@ -1,39 +1,63 @@
 'use strict'
 
+const number = /^\d+$/
+const EMPTY = {}
+// const EMPTY = Symbol.for('empty')
+
 const createGet = (db) => {
 	const get = (ns, cb) => {
 		const slice = {gt: ns + '.!', lt: ns + '.~'}
-		const tree = Object.create(null)
+		const container = {[ns]: EMPTY}
 
-		const onEntry = ({key, value}) => {
-			const parts = key.split('.')
+		const onEntry = ({key: path, value}) => {
+			const keys = path.split('.')
+			let tree = container[ns]
+			let parentTree = container
 
-			let subtree = tree
-			const maxI = parts.length - 2 // exclude last
-			for (let i = 1; i <= maxI; i++) { // begin at 1 because to skip ns
-				const part = parts[i]
-				if (!part) {
-					onError(new Error('key ' + key + ' contains empty parts'))
-					return
+			const maxI = keys.length - 1
+			for (let i = 1; i <= maxI; i++) { // skip first
+				let pKey = keys[i - 1]
+				let key = keys[i]
+				if (pKey.length === 0 || key.length === 0) {
+					throw new Error('path ' + path + ' contains empty parts')
 				}
 
-				if (!(part in subtree)) { // key does not exist
-					// create empty subtree, descend
-					subtree = (subtree[part] = Object.create(null))
-					continue
+				const arrayKey = number.test(key)
+				if (arrayKey) key = parseInt(key)
+				const inArray = Array.isArray(tree)
+
+				// we need to lazily create parent trees because we don't know before if they're
+				// going to be array or object.
+				if (tree === EMPTY) {
+					const k = number.test(pKey) ? parseInt(pKey) : pKey
+					const val = arrayKey ? [] : Object.create(null)
+					parentTree[k] = val // create tree in parent tree
+					tree = parentTree[k]
 				}
 
-				const val = subtree[part]
-				// not an object, thus not extendable
-				if (!val || 'object' !== typeof val || Array.isArray(val)) {
-					onError(new Error(parts.slice(1, i + 1).join('.') + ' is blocked'))
-					return
+				if (i === maxI) {
+					tree[key] = value
+				} else if (arrayKey && !inArray) {
+					const k = keys.slice(0, i + 1).join('.')
+					throw new Error(k + ': array key in non-array subtree')
+				} else if (!arrayKey && inArray) {
+					const k = keys.slice(0, i + 1).join('.')
+					throw new Error(k + ': non-array key in array subtree')
+				} else if (key in tree) {
+					const isSubtree = 'object' === typeof tree[key]
+					if (isSubtree) {
+						parentTree = tree
+						tree = tree[key]
+					} else {
+						const k = keys.slice(0, i + 1).join('.')
+						throw new Error(k + ' is blocked by a primitive value')
+					}
+				} else {
+					parentTree = tree
+					tree[key] = EMPTY
+					tree = tree[key]
 				}
-
-				subtree = val // descend
 			}
-
-			subtree[parts[maxI + 1]] = value
 		}
 
 		const onError = (err) => {
@@ -42,9 +66,17 @@ const createGet = (db) => {
 		}
 
 		const entries = db.createReadStream(slice)
-		entries.once('end', () => cb(null, tree))
+		entries.on('data', (entry) => {
+			try {
+				onEntry(entry)
+			} catch (err) {
+				onError(err)
+			}
+		})
+		entries.once('end', () => {
+			cb(null, container[ns])
+		})
 		entries.once('error', onError)
-		entries.on('data', onEntry)
 	}
 
 	return get
