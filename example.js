@@ -13,20 +13,30 @@ const onErr = (err) => {
 }
 
 const db = levelup(memdown)
+const tree = levelTree(db)
 
-db.batch()
-	.put('example.a1', 'hey')
-	.put('example.a2.b1', 'there!')
-	.put('example.a2.b2.c1', 'this')
-	.put('example.a3', 'is a tree')
-	.put('example-noise', 'this does not belong in the tree!')
-.write((err) => {
+tree.put('example', {
+	a1: 'A1',
+	a2: {
+		b1: 'A2-B1',
+		b2: {
+			c1: 'A2-B2-C1'
+		}
+	},
+	a3: 'A3'
+}, (err) => {
 	if (err) return onErr(err)
 
-	const tree = levelTree(db)
-	tree.get('example', (err, t) => {
+	db.batch()
+		.put('example.a2.b1', 'a new value')
+		.put('noise', 'does not belong to the tree')
+	.write((err) => {
 		if (err) return onErr(err)
 
-		console.log(t)
+		tree.get('example', (err, t) => {
+			if (err) return onErr(err)
+
+			console.log(t)
+		})
 	})
 })
