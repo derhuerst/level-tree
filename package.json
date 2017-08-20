@@ -1,0 +1,31 @@
+{
+	"name": "level-tree",
+	"description": "todo-description",
+	"version": "0.1.0",
+	"main": "index.js",
+	"files": [
+		"index.js"
+	],
+	"keywords": [
+		"leveldb",
+		"level",
+		"tree"
+	],
+	"author": "Jannis R <mail@jannisr.de>",
+	"homepage": "https://github.com/derhuerst/level-tree",
+	"repository": "derhuerst/level-tree",
+	"bugs": "https://github.com/derhuerst/level-tree/issues",
+	"license": "ISC",
+	"engines": {
+		"node": ">=6"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"tap-min": "^1.2.1",
+		"tape": "^4.8.0"
+	},
+	"scripts": {
+		"test": "node test.js | tap-min",
+		"prepublishOnly": "npm test"
+	}
+}
