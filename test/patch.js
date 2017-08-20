@@ -13,10 +13,10 @@ test('patch', (t) => {
 	const patch = createPatch(db)
 
 	t.equal(typeof patch, 'function')
-	t.equal(patch.length, 2)
+	t.equal(patch.length, 3)
 })
 
-test.only('patch: add works', (t) => {
+test('patch: add works', (t) => {
 	const expected = sortBy([
 		{key: 't.a1', value: 'A1'},
 		{key: 't.a2.0', value: 'A2-0'},
@@ -40,7 +40,7 @@ test.only('patch: add works', (t) => {
 		if (err) return t.ifError(err)
 
 		patch('t', [
-			{op: 'add', path: '/a2/2', value: 'new A2-1-B2'}, // add in arr
+			{op: 'add', path: '/a2/2', value: 'new A2-2'}, // add in arr
 			{op: 'add', path: '/a2/1/b2', value: 'new A2-1-B2'}, // add in obj in arr
 			{op: 'add', path: '/a4', value: 'new A4'} // add in obj
 		], (err) => {
@@ -58,22 +58,30 @@ test.only('patch: add works', (t) => {
 })
 
 test('patch checks for conflicts', (t) => {
-	t.plan(2)
+	t.plan(2 * 2)
 
 	const db = levelup(memdown)
-	const patch = createPatch(db)
+	const apply = createPatch(db)
 
 	db.batch()
 		.put('t.a1.0', 'A1-0')
+		.put('t.a2.b1', 'A2-B1')
 		// todo: other conflicts
 	.write((err) => {
 		if (err) return t.ifError(err)
 
-		patch('t', [
-			{op: 'add', path: '/a1/b1', value: 'A1-B1'} // obj key, but arr tree
-		], (err) => {
-			t.ok(err)
-			t.equal(err.message, 'conflict at /a1/b1')
-		})
+		const expectErr = (patch, msg) => {
+			apply('t', [patch], (err) => {
+				t.ok(err)
+				if (err) t.equal(err.message, msg)
+			})
+		}
+
+		expectErr({ // obj key, but arr tree
+			op: 'add', path: '/a1/b1', value: 'A1-B1'
+		}, 'conflict at /a1/b1')
+		expectErr({ // arr key, but obj tree
+			op: 'add', path: '/a2/0', value: 'A2-0'
+		}, 'conflict at /a2/0')
 	})
 })
