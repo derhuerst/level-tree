@@ -3,7 +3,7 @@
 const levelup = require('levelup')
 const memdown = require('memdown')
 const test = require('tape')
-const sortBy = require('lodash.sortBy')
+const sortBy = require('lodash.sortby')
 
 const createPut = require('../put')
 

@@ -25,16 +25,14 @@ const tree = levelTree(db)
 
 tree.put('example', {
 	a1: 'A1',
-	a2: {
-		b1: 'A2-B1',
-		b2: {
-			c1: 'A2-B2-C1'
-		}
-	}
+	a2: [
+		'A2-0',
+		{b1: 'A2-1-B1'}
+	]
 }, (err) => {
 	if (err) return console.error(err)
 
-	db.put('example.a2.b1', 'a new value', (err) => {
+	db.put('example.a2.0', 'a new value', (err) => {
 		if (err) return console.error(err)
 
 		tree.get('example', (err, example) => {
@@ -46,14 +44,16 @@ tree.put('example', {
 })
 ```
 
-You can also load `get` and `put` separately:
+You can also load `get`, `put` & `del` separately:
 
 ```js
 const createGet = require('@derhuerst/level-tree/get')
 const createPut = require('@derhuerst/level-tree/put')
+const createDel = require('@derhuerst/level-tree/del')
 
 const get = createGet(db)
 const put = createPut(db)
+const del = createDel(db)
 ```
 
 
