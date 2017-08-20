@@ -1,7 +1,12 @@
 'use strict'
 
 const createPut = (db) => {
-	const put = (ns, tree, cb) => {
+	const put = (ns, tree, dryRun, cb) => {
+		if ('function' === typeof dryRun) {
+			cb = dryRun
+			dryRun = false
+		}
+
 		const ops = []
 
 		const stack = [[ns + '.', tree]] // add root
@@ -17,7 +22,8 @@ const createPut = (db) => {
 			}
 		}
 
-		db.batch(ops, cb)
+		if (dryRun) cb(null, ops)
+		else db.batch(ops, cb)
 	}
 
 	return put

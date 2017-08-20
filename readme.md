@@ -69,7 +69,9 @@ const tree = createTree(db)
 
 Will try to infer the tree from all keys starting with `namespace`.
 
-## `tree.put(namespace, data, cb)`
+## `tree.put(namespace, [dryRun], data, cb)`
+
+If `dryRun` is `true`, `cb` will be called with all [ops](https://www.npmjs.com/package/levelup#batch) to be executed. Otherwise, they will be executed.
 
 ## `tree.del(namespace, [dryRun], cb)`
 
