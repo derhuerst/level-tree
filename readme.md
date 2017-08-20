@@ -1,5 +1,7 @@
 # level-tree
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/derhuerst/level-tree.svg)](https://greenkeeper.io/)
+
 **Store trees in a [LevelDB](https://github.com/level/levelup).**
 
 [![npm version](https://img.shields.io/npm/v/level-tree.svg)](https://www.npmjs.com/package/level-tree)
