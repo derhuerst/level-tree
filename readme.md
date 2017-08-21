@@ -27,7 +27,9 @@ tree.put('example', {
 	a1: 'A1',
 	a2: [
 		'A2-0',
-		{b1: 'A2-1-B1'}
+		{
+			b1: 'A2-1-B1'
+		}
 	]
 }, (err) => {
 	if (err) return console.error(err)
@@ -44,6 +46,18 @@ tree.put('example', {
 })
 ```
 
+```js
+{
+	a1: 'A1',
+	a2: [
+		'a new value',
+		{
+			b1: 'A2-1-B1'
+		}
+	]
+}
+```
+
 You can also load `get`, `put` & `del` separately:
 
 ```js
@@ -54,6 +68,39 @@ const createDel = require('@derhuerst/level-tree/del')
 const get = createGet(db)
 const put = createPut(db)
 const del = createDel(db)
+```
+
+### patches
+
+`level-tree` can apply [*JSON Patch*](http://jsonpatch.com/) diffs to the tree. Using the `db` from above:
+
+```js
+const createPatch = require('@derhuerst/level-tree/patch')
+const patch = createPatch(db)
+
+patch('example', [
+	{op: 'move', path: '/a3', from: '/a2/1'}
+], (err) => {
+	if (err) return console.error(err)
+
+	tree.get('example', (err, example) => {
+		if (err) return console.error(err)
+
+		console.log(example)
+	})
+})
+```
+
+```js
+{
+	a1: 'A1',
+	a2: [
+		'a new value'
+	],
+	a3: {
+		b1: 'A2-1-B1'
+	}
+}
 ```
 
 
