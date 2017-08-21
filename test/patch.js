@@ -24,7 +24,9 @@ test('patch: add works', (t) => {
 		{key: 't.a2.1.b2', value: 'new A2-1-B2'},
 		{key: 't.a2.2', value: 'new A2-2'},
 		{key: 't.a3', value: 'A3'},
-		{key: 't.a4', value: 'new A4'}
+		{key: 't.a4', value: 'new A4'},
+		{key: 't.a5.b1', value: 'new A5-B1'},
+		{key: 't.a5.b3', value: 'new A5-B3'}
 	], 'key')
 	t.plan(expected.length)
 
@@ -42,7 +44,11 @@ test('patch: add works', (t) => {
 		patch('t', [
 			{op: 'add', path: '/a2/2', value: 'new A2-2'}, // add in arr
 			{op: 'add', path: '/a2/1/b2', value: 'new A2-1-B2'}, // add in obj in arr
-			{op: 'add', path: '/a4', value: 'new A4'} // add in obj
+			{op: 'add', path: '/a4', value: 'new A4'}, // add in obj
+			{op: 'add', path: '/a5', value: {
+				b1: 'new A5-B1',
+				b3: 'new A5-B3'
+			}}
 		], (err) => {
 			if (err) return t.ifError(err)
 
@@ -187,6 +193,44 @@ test('patch: move works', (t) => {
 
 		patch('t', [
 			{op: 'move', path: '/a4', from: '/a2/1'}
+		], (err) => {
+			if (err) return t.ifError(err)
+
+			let dataI = 0
+			db.createReadStream()
+			.once('error', t.ifError)
+			.on('data', (data) => {
+				const i = dataI++
+				t.deepEqual(data, expected[i], i + ' looks good')
+			})
+		})
+	})
+})
+
+test('patch: replace works', (t) => {
+	const expected = sortBy([
+		{key: 't.a1', value: 'A1'},
+		{key: 't.a2.0', value: 'A2-0'},
+		{key: 't.a2.1.0', value: 'A2-1-0'},
+		{key: 't.a2.1.1', value: 'A2-1-1'},
+		{key: 't.a3', value: 'A3'}
+	], 'key')
+	t.plan(expected.length)
+
+	const db = levelup(memdown)
+	const patch = createPatch(db)
+
+	db.batch()
+		.put('t.a1', 'A1')
+		.put('t.a2.0', 'A2-0')
+		.put('t.a2.1.b1', 'A2-1-B1')
+		.put('t.a2.1.b2', 'A2-1-B2')
+		.put('t.a3', 'A3')
+	.write((err) => {
+		if (err) return t.ifError(err)
+
+		patch('t', [
+			{op: 'replace', path: '/a2.1', value: ['A2-1-0', 'A2-1-1']}
 		], (err) => {
 			if (err) return t.ifError(err)
 

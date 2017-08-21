@@ -7,7 +7,7 @@ const sortBy = require('lodash.sortby')
 
 const createPut = require('../put')
 
-test('put writes to db correctly', (t) => {
+test('put writes trees to db correctly', (t) => {
 	const expected = sortBy([
 		{key: 'example.a1', value: 'A1'},
 		{key: 'example.a2.0', value: 'A2-1'},
@@ -30,6 +30,28 @@ test('put writes to db correctly', (t) => {
 		],
 		a3: 'A3'
 	}, (err) => {
+		if (err) return onErr(err)
+
+		let dataI = 0
+		db.createReadStream()
+		.once('error', t.ifError)
+		.on('data', (data) => {
+			const i = dataI++
+			t.deepEqual(data, expected[i], i + ' looks good')
+		})
+	})
+})
+
+test('put writes primitives to db correctly', (t) => {
+	const expected = sortBy([
+		{key: 'example', value: 'hey!'}
+	], 'key')
+	t.plan(expected.length)
+
+	const db = levelup(memdown)
+	const put = createPut(db)
+
+	put('example', 'hey!', (err) => {
 		if (err) return onErr(err)
 
 		let dataI = 0

@@ -53,8 +53,11 @@ const createPatch = (db) => {
 						return cb(err)
 					}
 
-					ops.push({type: 'put', key, value: patch.value})
-					cb()
+					put(key, patch.value, true, (err, putOps) => {
+						if (err) return cb(err)
+						ops = ops.concat(putOps)
+						cb()
+					})
 				} else if (patch.op === 'remove') {
 					// todo: optimize using the typeAt index
 					del(key, true, (err, delOps) => {
@@ -106,10 +109,18 @@ const createPatch = (db) => {
 							})
 						})
 					})
-				} else {
-					// todo: replace
-					return cb(new Error('unsupported patch op: ' + patch.op))
-				}
+				} else if (patch.op === 'replace') {
+					// todo: check if key exists
+					del(key, true, (err, delOps) => {
+						if (err) return cb(err)
+						ops = ops.concat(delOps)
+						put(key, patch.value, true, (err, putOps) => {
+							if (err) return cb(err)
+							ops = ops.concat(putOps)
+							cb()
+						})
+					})
+				} else return cb(new Error('unsupported patch op: ' + patch.op))
 			}
 
 			eachSeries(patches, apply, (err) => {

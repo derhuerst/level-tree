@@ -12,6 +12,11 @@ const createPut = (db) => {
 		while (stack.length > 0) {
 			const [prefix, subtree] = stack.pop()
 
+			if ('object' !== typeof subtree) { // non-object -> primitive
+				ops.push({type: 'put', key: prefix.slice(0, -1), value: tree})
+				continue
+			}
+
 			const isArray = Array.isArray(subtree)
 			for (let k of Object.keys(subtree)) {
 				if (isArray) k = parseInt(k)
