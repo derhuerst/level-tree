@@ -31,13 +31,16 @@ const createPatch = (db) => {
 				const last = path[path.length - 1]
 				const key = path.join('.')
 
-				if (patch.op === 'add') {
+				if (patch.op === 'test') {
+					if (key in typeAt) cb()
+					else cb(new Error(patch.path + ' does not exist'))
+				} else if (patch.op === 'add') {
+					// todo: DRY with copy
 					// check if there is an existing conflicting leaf
 					const existingType = typeAt[path.slice(0, -1).join('.')] // without leaf
 					const newType = arrayIndex.test(last) ? ARRAY : OBJECT
 					if (existingType !== newType) {
 						// todo: more helpful message
-						// todo: DRY with copy
 						return cb(new Error('conflict at ' + patch.path))
 					}
 
@@ -52,12 +55,12 @@ const createPatch = (db) => {
 						cb()
 					})
 				} else if (patch.op === 'copy') {
+					// todo: DRY with add
 					// check if there is an existing conflicting leaf
 					const existingType = typeAt[path.slice(0, -1).join('.')] // without leaf
 					const newType = arrayIndex.test(last) ? ARRAY : OBJECT
 					if (existingType !== newType) {
 						// todo: more helpful message
-						// todo: DRY with add
 						return cb(new Error('conflict at ' + patch.path))
 					}
 
@@ -80,7 +83,6 @@ const createPatch = (db) => {
 
 			eachSeries(patches, apply, (err) => {
 				if (err) return cb(err)
-
 				if (dryRun) cb(null, ops)
 				else db.batch(ops, cb)
 			})

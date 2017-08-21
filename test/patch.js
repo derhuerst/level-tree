@@ -131,6 +131,38 @@ test('patch: copy works', (t) => {
 	})
 })
 
+test('patch: test works', (t) => {
+	t.plan(2 + 1)
+
+	const db = levelup(memdown)
+	const patch = createPatch(db)
+
+	db.batch()
+		.put('t.a1', 'A1')
+		.put('t.a2.0', 'A2-0')
+		.put('t.a2.1.b1', 'A2-1-B1')
+		.put('t.a3', 'A3')
+	.write((err) => {
+		if (err) return t.ifError(err)
+
+		patch('t', [
+			{op: 'test', path: '/a4'} // does not exist
+		], (err) => {
+			t.ok(err)
+			if (err) t.equal(err.message, '/a4 does not exist')
+		})
+
+		patch('t', [
+			{op: 'test', path: '/a1'},
+			{op: 'test', path: '/a2.1'},
+			{op: 'test', path: '/a2.1.b1'}
+		], (err) => {
+			t.notOk(err)
+			if (err) t.ifError(err)
+		})
+	})
+})
+
 test('patch: dryRun works', (t) => {
 	t.plan(1)
 

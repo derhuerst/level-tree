@@ -6,7 +6,6 @@ const createPut = (db) => {
 			cb = dryRun
 			dryRun = false
 		}
-
 		const ops = []
 
 		const stack = [[ns + '.', tree]] // add root
