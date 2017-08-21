@@ -163,6 +163,44 @@ test('patch: test works', (t) => {
 	})
 })
 
+test('patch: move works', (t) => {
+	const expected = sortBy([
+		{key: 't.a1', value: 'A1'},
+		{key: 't.a2.0', value: 'A2-0'},
+		{key: 't.a3', value: 'A3'},
+		{key: 't.a4.b1', value: 'A2-1-B1'}, // note the value
+		{key: 't.a4.b2', value: 'A2-1-B2'}, // note the value
+	], 'key')
+	t.plan(expected.length)
+
+	const db = levelup(memdown)
+	const patch = createPatch(db)
+
+	db.batch()
+		.put('t.a1', 'A1')
+		.put('t.a2.0', 'A2-0')
+		.put('t.a2.1.b1', 'A2-1-B1')
+		.put('t.a2.1.b2', 'A2-1-B2')
+		.put('t.a3', 'A3')
+	.write((err) => {
+		if (err) return t.ifError(err)
+
+		patch('t', [
+			{op: 'move', path: '/a4', from: '/a2/1'}
+		], (err) => {
+			if (err) return t.ifError(err)
+
+			let dataI = 0
+			db.createReadStream()
+			.once('error', t.ifError)
+			.on('data', (data) => {
+				const i = dataI++
+				t.deepEqual(data, expected[i], i + ' looks good')
+			})
+		})
+	})
+})
+
 test('patch: dryRun works', (t) => {
 	t.plan(1)
 

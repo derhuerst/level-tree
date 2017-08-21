@@ -25,6 +25,17 @@ const createPatch = (db) => {
 		createTypeIndex(db, ns, (err, typeAt) => {
 			if (err) return cb(err)
 
+			const assertNoConflict = (base, key) => {
+				// check if there is an existing conflicting leaf
+				const newType = arrayIndex.test(key) ? ARRAY : OBJECT
+				if (typeAt[base.join('.')] !== newType) {
+					// todo: more helpful message
+					const path = base.slice(1)
+					path.push(key)
+					throw new Error('conflict at /' + path.join('/'))
+				}
+			}
+
 			const apply = (patch, cb) => {
 				const path = patch.path.split('/').slice(1)
 				path.unshift(ns)
@@ -35,13 +46,11 @@ const createPatch = (db) => {
 					if (key in typeAt) cb()
 					else cb(new Error(patch.path + ' does not exist'))
 				} else if (patch.op === 'add') {
-					// todo: DRY with copy
-					// check if there is an existing conflicting leaf
-					const existingType = typeAt[path.slice(0, -1).join('.')] // without leaf
-					const newType = arrayIndex.test(last) ? ARRAY : OBJECT
-					if (existingType !== newType) {
-						// todo: more helpful message
-						return cb(new Error('conflict at ' + patch.path))
+					const base = path.slice(0, -1) // without leaf
+					try {
+						assertNoConflict(base, last)
+					} catch (err) {
+						return cb(err)
 					}
 
 					ops.push({type: 'put', key, value: patch.value})
@@ -55,13 +64,11 @@ const createPatch = (db) => {
 						cb()
 					})
 				} else if (patch.op === 'copy') {
-					// todo: DRY with add
-					// check if there is an existing conflicting leaf
-					const existingType = typeAt[path.slice(0, -1).join('.')] // without leaf
-					const newType = arrayIndex.test(last) ? ARRAY : OBJECT
-					if (existingType !== newType) {
-						// todo: more helpful message
-						return cb(new Error('conflict at ' + patch.path))
+					const base = path.slice(0, -1) // without leaf
+					try {
+						assertNoConflict(base, last)
+					} catch (err) {
+						return cb(err)
 					}
 
 					const from = patch.from.split('/').slice(1)
@@ -75,9 +82,33 @@ const createPatch = (db) => {
 							cb()
 						})
 					})
+				} else if (patch.op === 'move') {
+					const base = path.slice(0, -1) // without leaf
+					try {
+						assertNoConflict(base, last)
+					} catch (err) {
+						return cb(err)
+					}
+
+					let fromKey = patch.from.split('/').slice(1)
+					fromKey.unshift(ns)
+					fromKey = fromKey.join('.')
+
+					get(fromKey, (err, tree) => {
+						if (err) return cb(err)
+						put(key, tree, true, (err, putOps) => {
+							if (err) return cb(err)
+							ops = ops.concat(putOps)
+							del(fromKey, true, (err, delOps) => {
+								if (err) return cb(err)
+								ops = ops.concat(delOps)
+								cb()
+							})
+						})
+					})
 				} else {
-					// todo: replace, remove, copy, move, test
-					return cb(new Error('unsupported patch op:' + patch.op))
+					// todo: replace
+					return cb(new Error('unsupported patch op: ' + patch.op))
 				}
 			}
 
