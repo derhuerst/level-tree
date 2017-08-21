@@ -7,7 +7,7 @@ const test = require('tape')
 const createGet = require('../get')
 
 test('get reads from db correctly', (t) => {
-	t.plan(3)
+	t.plan(2 + 3)
 	const db = levelup(memdown)
 	const get = createGet(db)
 
@@ -25,7 +25,6 @@ test('get reads from db correctly', (t) => {
 
 		get('tree', (err, tree) => {
 			if (err) return t.ifError(err)
-
 			t.deepEqual(tree, {
 				a1: 'A1',
 				a2: [
@@ -35,6 +34,20 @@ test('get reads from db correctly', (t) => {
 				],
 				a3: 'A3'
 			})
+		})
+
+		get('tree.a2', (err, tree) => {
+			if (err) return t.ifError(err)
+			t.deepEqual(tree, [
+				'A2-1',
+				{b1: 'A2-2-B1'},
+				{b1: 'A2-3-B1'}
+			])
+		})
+
+		get('tree.a2.1', (err, tree) => {
+			if (err) return t.ifError(err)
+			t.deepEqual(tree, {b1: 'A2-2-B1'})
 		})
 	})
 })

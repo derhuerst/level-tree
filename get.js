@@ -6,17 +6,23 @@ const EMPTY = {}
 
 const createGet = (db) => {
 	const get = (ns, cb) => {
-		const slice = {gt: ns + '.!', lt: ns + '.~'}
-		const container = {[ns]: EMPTY}
+		const keys = ns.split('.')
+		let last = ns[ns.length - 1], container
+		if (number.test(last)) {
+			last = parseInt(last)
+			container = []
+		} else container = {}
+		container[last] = EMPTY
 
 		const onEntry = ({key: path, value}) => {
-			const keys = path.split('.')
-			let tree = container[ns]
+			const relPath = path.slice(ns.length + 1)
+			const keys = relPath.split('.')
+			let tree = container[last]
 			let parentTree = container
 
 			const maxI = keys.length - 1
-			for (let i = 1; i <= maxI; i++) { // skip first
-				let pKey = keys[i - 1]
+			for (let i = 0; i <= maxI; i++) {
+				let pKey = i === 0 ? last : keys[i - 1]
 				let key = keys[i]
 				if (pKey.length === 0 || key.length === 0) {
 					throw new Error('path ' + path + ' contains empty parts')
@@ -50,7 +56,7 @@ const createGet = (db) => {
 						tree = tree[key]
 					} else {
 						const k = keys.slice(0, i + 1).join('.')
-						throw new Error(k + ' is blocked by a primitive value')
+						throw new Error(ns + '.' + k + ' is blocked by a primitive value')
 					}
 				} else {
 					parentTree = tree
@@ -65,7 +71,10 @@ const createGet = (db) => {
 			cb(err)
 		}
 
-		const entries = db.createReadStream(slice)
+		const entries = db.createReadStream({
+			gt: ns + '.!',
+			lt: ns + '.~'
+		})
 		entries.on('data', (entry) => {
 			try {
 				onEntry(entry)
@@ -74,7 +83,7 @@ const createGet = (db) => {
 			}
 		})
 		entries.once('end', () => {
-			cb(null, container[ns])
+			cb(null, container[last])
 		})
 		entries.once('error', onError)
 	}
