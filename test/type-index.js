@@ -4,12 +4,13 @@ const levelup = require('levelup')
 const memdown = require('memdown')
 const test = require('tape')
 
+const {createDb} = require('./lib')
 const createTypeIndex = require('../lib/type-index')
 const {typeAt, ARRAY, OBJECT, OTHER} = createTypeIndex
 
 test('type index works', (t) => {
 	t.plan(1)
-	const db = levelup(memdown)
+	const db = createDb()
 
 	db.batch()
 		.put('tree.a1', 'A1')

@@ -4,6 +4,7 @@ const levelup = require('levelup')
 const memdown = require('memdown')
 const test = require('tape')
 
+const {createDb, dbLooksLike} = require('./lib')
 const createDel = require('../del')
 
 test('del deletes from db correctly', (t) => {
@@ -14,7 +15,7 @@ test('del deletes from db correctly', (t) => {
 		{key: 'tree.a3', value: 'A3'}
 	]
 	t.plan(2 + expected.length)
-	const db = levelup(memdown)
+	const db = createDb()
 	const del = createDel(db)
 
 	t.equal(typeof del, 'function')
@@ -33,20 +34,14 @@ test('del deletes from db correctly', (t) => {
 		del('tree.a2', (err) => {
 			if (err) return t.ifError(err)
 
-			let dataI = 0
-			db.createReadStream()
-			.once('error', t.ifError)
-			.on('data', (data) => {
-				const i = dataI++
-				t.deepEqual(data, expected[i], i + ' looks good')
-			})
+			dbLooksLike(t, db, expected)
 		})
 	})
 })
 
 test('del dry run works', (t) => {
 	t.plan(1)
-	const db = levelup(memdown)
+	const db = createDb()
 	const del = createDel(db)
 
 	db.batch()
@@ -76,7 +71,7 @@ test('del deletes root when no children', (t) => {
 		{key: 'tree.a2.b2', value: 'A2-B2'}
 	]
 	t.plan(expected.length)
-	const db = levelup(memdown)
+	const db = createDb()
 	const del = createDel(db)
 
 	db.batch()
@@ -89,13 +84,7 @@ test('del deletes root when no children', (t) => {
 		del('tree.a1', (err) => {
 			if (err) return t.ifError(err)
 
-			let dataI = 0
-			db.createReadStream()
-			.once('error', t.ifError)
-			.on('data', (data) => {
-				const i = dataI++
-				t.deepEqual(data, expected[i], i + ' looks good')
-			})
+			dbLooksLike(t, db, expected)
 		})
 	})
 })

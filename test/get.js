@@ -4,11 +4,12 @@ const levelup = require('levelup')
 const memdown = require('memdown')
 const test = require('tape')
 
+const {createDb} = require('./lib')
 const createGet = require('../get')
 
 test('get reads from db correctly', (t) => {
 	t.plan(2 + 3)
-	const db = levelup(memdown)
+	const db = createDb()
 	const get = createGet(db)
 
 	t.equal(typeof get, 'function')
@@ -54,7 +55,7 @@ test('get reads from db correctly', (t) => {
 
 test('get ignores noise', (t) => {
 	t.plan(1)
-	const db = levelup(memdown)
+	const db = createDb()
 	const get = createGet(db)
 
 	db.batch()
@@ -80,7 +81,7 @@ test('get ignores noise', (t) => {
 
 test('get throws on conflicts', (t) => {
 	t.plan(3)
-	const db = levelup(memdown)
+	const db = createDb()
 	const get = createGet(db)
 
 	db.batch()
