@@ -11,7 +11,10 @@ const createDel = (db) => {
 		const ops = []
 
 		const onEntry = (key) => {
-			ops.push({type: 'del', key})
+			ops.push({
+				type: 'del',
+				key: key.toString('utf8')
+			})
 		}
 
 		const run = () => {
