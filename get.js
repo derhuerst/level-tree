@@ -15,6 +15,9 @@ const createGet = (db) => {
 		container[last] = EMPTY
 
 		const onEntry = ({key: path, value}) => {
+			path = path.toString('utf8')
+			value = value.toString('utf8')
+
 			const relPath = path.slice(ns.length + 1)
 			const keys = relPath.split('.')
 			let tree = container[last]
