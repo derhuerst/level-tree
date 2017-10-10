@@ -5,11 +5,12 @@ const memdown = require('memdown')
 const test = require('tape')
 const sortBy = require('lodash.sortby')
 
+const {createDb, dbLooksLike} = require('./lib')
 const createPatch = require('../patch')
 
 test('patch', (t) => {
 	t.plan(2)
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	t.equal(typeof patch, 'function')
@@ -30,7 +31,7 @@ test('patch: add works', (t) => {
 	], 'key')
 	t.plan(expected.length)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	db.batch()
@@ -52,13 +53,7 @@ test('patch: add works', (t) => {
 		], (err) => {
 			if (err) return t.ifError(err)
 
-			let dataI = 0
-			db.createReadStream()
-			.once('error', t.ifError)
-			.on('data', (data) => {
-				const i = dataI++
-				t.deepEqual(data, expected[i], i + ' looks good')
-			})
+			dbLooksLike(t, db, expected)
 		})
 	})
 })
@@ -70,7 +65,7 @@ test('patch: remove works', (t) => {
 	], 'key')
 	t.plan(expected.length)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	db.batch()
@@ -86,13 +81,7 @@ test('patch: remove works', (t) => {
 		], (err) => {
 			if (err) return t.ifError(err)
 
-			let dataI = 0
-			db.createReadStream()
-			.once('error', t.ifError)
-			.on('data', (data) => {
-				const i = dataI++
-				t.deepEqual(data, expected[i], i + ' looks good')
-			})
+			dbLooksLike(t, db, expected)
 		})
 	})
 })
@@ -109,7 +98,7 @@ test('patch: copy works', (t) => {
 	], 'key')
 	t.plan(expected.length)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	db.batch()
@@ -126,13 +115,7 @@ test('patch: copy works', (t) => {
 		], (err) => {
 			if (err) return t.ifError(err)
 
-			let dataI = 0
-			db.createReadStream()
-			.once('error', t.ifError)
-			.on('data', (data) => {
-				const i = dataI++
-				t.deepEqual(data, expected[i], i + ' looks good')
-			})
+			dbLooksLike(t, db, expected)
 		})
 	})
 })
@@ -140,7 +123,7 @@ test('patch: copy works', (t) => {
 test('patch: test works', (t) => {
 	t.plan(2 + 1)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	db.batch()
@@ -179,7 +162,7 @@ test('patch: move works', (t) => {
 	], 'key')
 	t.plan(expected.length)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	db.batch()
@@ -196,13 +179,7 @@ test('patch: move works', (t) => {
 		], (err) => {
 			if (err) return t.ifError(err)
 
-			let dataI = 0
-			db.createReadStream()
-			.once('error', t.ifError)
-			.on('data', (data) => {
-				const i = dataI++
-				t.deepEqual(data, expected[i], i + ' looks good')
-			})
+			dbLooksLike(t, db, expected)
 		})
 	})
 })
@@ -217,7 +194,7 @@ test('patch: replace works', (t) => {
 	], 'key')
 	t.plan(expected.length)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	db.batch()
@@ -234,13 +211,7 @@ test('patch: replace works', (t) => {
 		], (err) => {
 			if (err) return t.ifError(err)
 
-			let dataI = 0
-			db.createReadStream()
-			.once('error', t.ifError)
-			.on('data', (data) => {
-				const i = dataI++
-				t.deepEqual(data, expected[i], i + ' looks good')
-			})
+			dbLooksLike(t, db, expected)
 		})
 	})
 })
@@ -248,7 +219,7 @@ test('patch: replace works', (t) => {
 test('patch: dryRun works', (t) => {
 	t.plan(1)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const patch = createPatch(db)
 
 	db.batch()
@@ -274,7 +245,7 @@ test('patch: dryRun works', (t) => {
 test('patch checks for conflicts', (t) => {
 	t.plan(2 * 2)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const apply = createPatch(db)
 
 	db.batch()

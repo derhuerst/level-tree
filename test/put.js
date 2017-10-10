@@ -5,6 +5,7 @@ const memdown = require('memdown')
 const test = require('tape')
 const sortBy = require('lodash.sortby')
 
+const {createDb, dbLooksLike} = require('./lib')
 const createPut = require('../put')
 
 test('put writes trees to db correctly', (t) => {
@@ -16,7 +17,7 @@ test('put writes trees to db correctly', (t) => {
 	], 'key')
 	t.plan(2 + expected.length)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const put = createPut(db)
 
 	t.equal(typeof put, 'function')
@@ -32,13 +33,7 @@ test('put writes trees to db correctly', (t) => {
 	}, (err) => {
 		if (err) return onErr(err)
 
-		let dataI = 0
-		db.createReadStream()
-		.once('error', t.ifError)
-		.on('data', (data) => {
-			const i = dataI++
-			t.deepEqual(data, expected[i], i + ' looks good')
-		})
+		dbLooksLike(t, db, expected)
 	})
 })
 
@@ -48,25 +43,19 @@ test('put writes primitives to db correctly', (t) => {
 	], 'key')
 	t.plan(expected.length)
 
-	const db = levelup(memdown)
+	const db = createDb()
 	const put = createPut(db)
 
 	put('example', 'hey!', (err) => {
 		if (err) return onErr(err)
 
-		let dataI = 0
-		db.createReadStream()
-		.once('error', t.ifError)
-		.on('data', (data) => {
-			const i = dataI++
-			t.deepEqual(data, expected[i], i + ' looks good')
-		})
+		dbLooksLike(t, db, expected)
 	})
 })
 
 test('put dry run works', (t) => {
 	t.plan(2)
-	const db = levelup(memdown)
+	const db = createDb()
 	const put = createPut(db)
 
 	put('example', {
