@@ -30,6 +30,9 @@
 	"dependencies": {
 		"async": "^2.5.0"
 	},
+	"peerDependencies": {
+		"levelup": "^2.0.0"
+	},
 	"devDependencies": {
 		"levelup": "^2.0.0",
 		"lodash.sortby": "^4.7.0",
