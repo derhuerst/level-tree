@@ -1,8 +1,7 @@
 'use strict'
 
 const number = /^\d+$/
-const EMPTY = {}
-// const EMPTY = Symbol.for('empty')
+const EMPTY = Symbol('empty')
 
 const createGet = (db) => {
 	const get = (ns, cb) => {
