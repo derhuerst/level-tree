@@ -21,7 +21,7 @@ npm install @derhuerst/level-tree
 ```js
 const levelTree = require('@derhuerst/level-tree')
 
-const db = levelup(memdown)
+const db = level('path/to/leveldb')
 const tree = levelTree(db)
 
 tree.put('example', {

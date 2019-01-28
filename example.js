@@ -12,7 +12,7 @@ const onErr = (err) => {
 	}
 }
 
-const db = levelup(memdown)
+const db = levelup(memdown())
 const tree = levelTree(db)
 
 tree.put('example', {
