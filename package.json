@@ -28,7 +28,7 @@
 		"node": ">=6"
 	},
 	"dependencies": {
-		"async": "^2.5.0"
+		"async": "^3.0.1"
 	},
 	"peerDependencies": {
 		"levelup": "^2.0.0"
