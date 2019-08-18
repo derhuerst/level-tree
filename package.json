@@ -36,7 +36,7 @@
 	"devDependencies": {
 		"levelup": "^4.0.0",
 		"lodash.sortby": "^4.7.0",
-		"memdown": "^4.0.0",
+		"memdown": "^5.0.0",
 		"tap-min": "^1.2.1",
 		"tape": "^4.8.0"
 	},
